@@ -14,10 +14,7 @@ fn tiles_for(n: Int) -> Int:
 
 alias BoxLayout   = Layout.row_major(4)
 alias ScoreLayout = Layout.row_major(1)
-
-fn MaskLayout_for(n: Int) -> Layout:
-    var chunks: Int = (n + TILE - 1) // TILE
-    return Layout.row_major(chunks)
+alias MaskLayout = Layout.row_major(1)
 
 @value
 struct BoundingBox[T: DType]:
@@ -42,8 +39,8 @@ struct BoundingBox[T: DType]:
 #Kernel for building suppression in upper matrix
 fn nms_bitmask_kernel[T: DType](
     boxes:  LayoutTensor[T,        BoxLayout],      # [N,4]
-    scores: LayoutTensor[T,        ScoreLayout],    # [N,1] (already DESC sorted)
-    mask:   LayoutTensor[mut=True, DType.uint32 ],# [N, ceil(N/32)]
+    scores: LayoutTensor[T,        ScoreLayout],    # [N,4] (already DESC sorted)
+    mask:   LayoutTensor[mut=True, DType.uint32, MaskLayout],# [N, ceil(N/32)]
     n:      Int,
     iou_th: Float32
 ):
@@ -113,7 +110,7 @@ fn nms_bitmask_kernel[T: DType](
 fn sweep_mask_kernel(
     n:         Int,
     mask:      LayoutTensor[DType.uint32, Layout.row_major(1)],
-    keep:      LayoutTensor[mut=True, DType.uint8, Layout.row_major(1)], 
+    keep:      LayoutTensor[mut=True, DType.uint8, Layout.row_major(1)]
 ):
     var gid = block_idx.x * block_dim.x + thread_idx.x
     if gid >= n: return
@@ -124,7 +121,7 @@ fn sweep_mask_kernel(
         if mask[gid * ((n + TILE - 1) // TILE) + c] != 0:
             alive = 0
             break
-    keep[gid, 0] = alive
+    keep[gid] = alive
 
 # -----------------------------------------------------------------------------
 #  Host convenience wrapper (enqueue both kernels)

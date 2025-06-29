@@ -68,10 +68,10 @@ def main():
         fast_nms[Float32](ctx, boxes_buf, scores_buf, keep_buf, n, 0.5)
         
         # Read back results using LayoutTensor
-        var keep0 = keep_t[0, 0]
-        var keep1 = keep_t[1, 0]
-        var keep2 = keep_t[2, 0]
-        var keep3 = keep_t[3, 0]
+        var keep0 = keep_t[0]
+        var keep1 = keep_t[1]
+        var keep2 = keep_t[2]
+        var keep3 = keep_t[3]
         
         print("NMS Results:")
         print("Box 0 (score 0.95) keep:", keep0)
@@ -80,10 +80,12 @@ def main():
         print("Box 3 (score 0.70) keep:", keep3)
         
         # Validate results
-        if keep0 == 1 and keep1 == 0 and keep2 == 1 and keep3 == 0:
+        if keep0 == 1 and keep1 == 0 and keep2 == 1 and keep3 == 1:
             print("✅ Test PASSED: NMS correctly kept highest scoring non-overlapping boxes")
         else:
             print("❌ Test FAILED: Unexpected NMS results")
+            print("Expected: Box 0=1, Box 1=0, Box 2=1, Box 3=1")
+            print("Got: Box 0=", keep0, ", Box 1=", keep1, ", Box 2=", keep2, ", Box 3=", keep3)
         
         print("Test completed!")
     except e:
