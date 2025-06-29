@@ -8,7 +8,7 @@ import sys
 # Try to load the existing CUDA extension
 try:
     # Add the existing extension path to sys.path
-    extension_path = "/home/pradeep/.cache/torch_extensions/py310_cu126/nms_cuda"
+    extension_path = "/home/ubuntu/.cache/torch_extensions/py310_cu128/nms_cuda"
     if extension_path not in sys.path:
         sys.path.insert(0, extension_path)
     
